@@ -4,11 +4,11 @@ const promotionStateManager = defineState(
   ({ /** TODO FOR THE CHALLENGE: add the required properties here */ }) => {
 
     // TODO FOR THE CHALLENGE: Create a state property of type string to store promotion name
-    const promotionName;
+    const promotionName = '';
     
 
     // TODO FOR THE CHALLENGE: Create a state property of type array to store products
-    const chosenProducts;
+    const chosenProducts = [];
 
     const chosenStores = atom([]);
 
