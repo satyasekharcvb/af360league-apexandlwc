@@ -1,4 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
+import promotionStateManager from 'c/promotionStateManager';
+import { atom, setAtom, computed, defineState } from 'c/sfState';
 
 /** TODO FOR THE CHALLENGE: import the state manager, and the context modules */
 
