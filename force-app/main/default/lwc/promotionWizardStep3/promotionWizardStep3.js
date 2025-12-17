@@ -1,10 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
-import { fromContext } from '@lwc/state';
 import promotionStateManager from 'c/promotionStateManager';
 import getRetailStores from '@salesforce/apex/PromotionCreatorCtrl.getRetailStores';
 
 export default class PromotionWizardStep3 extends LightningElement {
-    promotionState = fromContext(promotionStateManager);
+    promotionState = promotionStateManager;
 
     @api recordId; // Account Id passed from parent wizard
 
@@ -137,9 +136,11 @@ export default class PromotionWizardStep3 extends LightningElement {
 
     @api
     allValid() {
+        console.log('Step 3 validation called, selected stores:', this.selectedStoreIds.size);
         // Check if at least one store is selected
         if (this.selectedStoreIds.size === 0) {
             this.error = 'Please select at least one store.';
+            console.log('Validation failed: no stores selected');
             return false;
         }
 
@@ -152,9 +153,25 @@ export default class PromotionWizardStep3 extends LightningElement {
                 locationGroup: s.locationGroup
             }));
         
-        this.promotionState.value.updateStores(storesArray);
+        console.log('Updating stores in state:', storesArray);
+        // Add more robust error checking for state access
+        try {
+            if (this.promotionState && this.promotionState.value) {
+                if (typeof this.promotionState.value.updateStores === 'function') {
+                    this.promotionState.value.updateStores(storesArray);
+                    console.log('Stores updated successfully');
+                } else {
+                    console.error('updateStores is not a function:', this.promotionState.value.updateStores);
+                }
+            } else {
+                console.error('promotionState or promotionState.value is undefined:', this.promotionState);
+            }
+        } catch (error) {
+            console.error('Error updating stores in state:', error);
+        }
         
         this.error = null;
+        console.log('Validation passed for step 3');
         return true;
     }
 

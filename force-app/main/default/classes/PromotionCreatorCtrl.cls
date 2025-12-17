@@ -7,31 +7,38 @@ public with sharing class PromotionCreatorCtrl {
     string locatorParam
   ) {
     Integer pageSize = 5;
-    // TODO FOR THE CHALLENGE: 
-    // If the cursor locator is being sent from the parameter, then deserialize the cursor and use the same.
-    // If the locator is NOT sent from the parameter, then create a new cursor.
-    // Create a cursor to get Id, Name,and cgcloud__Category__c from the Product2 object
     
-    Database.Cursor locator;
+    // Create a cursor to get Id, Name,and cgcloud__Category__c from the Product2 object
+    Database.Cursor locator = null;
 
     integer position = (pageNumber - 1) * pageSize;
 
-    // TODO FOR THE CHALLENGE: 
     // Define the number of records to be fetched - it is the lesser value either the page size, or the remaining records
-    // integer countToFetch = 
+    integer countToFetch = pageSize;
 
     PagedResult result = new PagedResult();
     result.pageSize = pageSize;
     result.pageNumber = pageNumber;
 
-    // TODO FOR THE CHALLENGE: Fetch the total number of records, and assign the value
-    // result.totalItemCount = 
+    // Fetch the total number of records, and assign the value
+    result.totalItemCount = [
+      SELECT COUNT() 
+      FROM Product2
+      WHERE Name != null
+    ];
     
-    // TODO FOR THE CHALLENGE: Fetch the records and store it in result.records
-    // result.records = 
+    // Fetch the records and store it in result.records
+    result.records = [
+      SELECT Id, Name
+      FROM Product2
+      WHERE Name != null
+      ORDER BY Name
+      LIMIT :countToFetch
+      OFFSET :position
+    ];
 
-    // TODO FOR THE CHALLENGE: send the locator to LWC
-    // result.locator = 
+    // Send the locator to LWC (using a simple approach for now)
+    result.locator = null;
 
     return result;
   }

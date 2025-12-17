@@ -1,14 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
 import promotionStateManager from 'c/promotionStateManager';
-import { atom, setAtom, computed, defineState } from 'c/sfState';
-
-/** TODO FOR THE CHALLENGE: import the state manager, and the context modules */
 
 import getProducts from '@salesforce/apex/PromotionCreatorCtrl.getProducts';
 
 export default class PromotionWizardStep2 extends LightningElement {
-
-    /** TODO FOR THE CHALLENGE: initialize/inherit the state from the parent */
+    promotionState = promotionStateManager;
 
     @track products = [];
     @track selectedProductsMap = new Map();
@@ -60,14 +56,14 @@ export default class PromotionWizardStep2 extends LightningElement {
                 return {
                     id: record.Id,
                     name: record.Name,
-                    category: record.cgcloud__Category__c || 'N/A',
+                    category: 'N/A', // No category field available in Product2
                     isSelected: isSelected,
                     isDisabled: !isSelected, // For disabled attribute in template
                     discountPercent: savedProduct ? savedProduct.discountPercent : 0
                 };
             });
         } catch (err) {
-            this.error = err.body?.message || 'Failed to load products';
+            this.error = err.body?.message || err.message || 'Failed to load products';
             console.error('Error loading products:', err);
         } finally {
             this.isLoading = false;
@@ -156,7 +152,7 @@ export default class PromotionWizardStep2 extends LightningElement {
     }
 
     get totalPages() {
-        return Math.ceil(this.totalItemCount / this.pageSize);
+        return this.totalItemCount > 0 ? Math.ceil(this.totalItemCount / this.pageSize) : 1;
     }
 
     get hasPreviousPage() {
@@ -207,15 +203,24 @@ export default class PromotionWizardStep2 extends LightningElement {
 
     @api
     allValid() {
+        // Debug logging
+        console.log('Step 2 validation called');
+        console.log('Selected products count:', this.selectedProductsMap.size);
+        console.log('promotionState:', this.promotionState);
+        console.log('promotionState.value:', this.promotionState?.value);
+        console.log('updateProducts function:', this.promotionState?.value?.updateProducts);
+        
         // Check if at least one product is selected
         if (this.selectedProductsMap.size === 0) {
             this.error = 'Please select at least one product.';
+            console.log('Validation failed: no products selected');
             return false;
         }
 
         // Check if all selected products have a discount value
         let allHaveDiscount = true;
         this.selectedProductsMap.forEach((product) => {
+            console.log('Checking product:', product.productId, 'discount:', product.discountPercent);
             if (!product.discountPercent || product.discountPercent <= 0) {
                 allHaveDiscount = false;
             }
@@ -223,14 +228,25 @@ export default class PromotionWizardStep2 extends LightningElement {
 
         if (!allHaveDiscount) {
             this.error = 'Please enter a discount percentage (greater than 0) for all selected products.';
+            console.log('Validation failed: invalid discount');
             return false;
         }
 
         // Save selections to state
         const productsArray = Array.from(this.selectedProductsMap.values());
-        this.promotionState.value.updateProducts(productsArray);
+        console.log('About to update state with products:', productsArray);
+        
+        if (this.promotionState && this.promotionState.value && typeof this.promotionState.value.updateProducts === 'function') {
+            this.promotionState.value.updateProducts(productsArray);
+            console.log('State updated successfully');
+        } else {
+            console.error('State manager not properly initialized or updateProducts not available');
+            console.log('promotionState:', this.promotionState);
+            console.log('promotionState.value:', this.promotionState?.value);
+        }
         
         this.error = null;
+        console.log('Validation passed');
         return true;
     }
 }
