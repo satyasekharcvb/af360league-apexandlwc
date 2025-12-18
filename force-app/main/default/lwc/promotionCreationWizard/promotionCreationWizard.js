@@ -1,7 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 
-/** TODO FOR THE CHALLENGE: import the state manager */
+// Import the state manager
+import promotionStateManager from 'c/promotionStateManager';
 
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { CloseActionScreenEvent } from 'lightning/actions';
@@ -12,23 +13,42 @@ export default class PromotionCreationWizard extends NavigationMixin(LightningEl
 
     currentStep = 1;
 
-    /** TODO FOR THE CHALLENGE: initialize the state manager */
+    // Initialize the state manager
+    constructor() {
+        super();
+        // Initialize promotion state manager instance for this wizard
+        this.state = promotionStateManager;
+    }
+    
+    connectedCallback() {
+        // Make sure the state manager is accessible to children
+        console.log('Wizard connected, state:', this.state);
+        // Expose the state to child components through a public property
+        this.exposedState = this.state;
+    }
 
     @track isSaving = false;
 
     handleNext() {
+        console.log('handleNext called, currentStep:', this.currentStep);
         if (this.currentStep === 1) {
             const element = this.template.querySelector('c-promotion-wizard-step1');
+            console.log('Checking step 1 validation...');
             if (element.allValid()) {
+                console.log('Step 1 validation passed, moving to step 2');
                 this.currentStep++;
             } else {
+                console.log('Step 1 validation failed');
                 this.showToast('Validation Error', 'Please enter a promotion name.', 'error');
             }
         } else if (this.currentStep === 2) {
             const element = this.template.querySelector('c-promotion-wizard-step2');
+            console.log('Checking step 2 validation...');
             if (element.allValid()) {
+                console.log('Step 2 validation passed, moving to step 3');
                 this.currentStep++;
             } else {
+                console.log('Step 2 validation failed');
                 this.showToast('Validation Error', 'Please select at least one product with a valid discount.', 'error');
             }
         }
