@@ -11,27 +11,31 @@ public with sharing class PromotionCreatorCtrl {
     // If the cursor locator is being sent from the parameter, then deserialize the cursor and use the same.
     // If the locator is NOT sent from the parameter, then create a new cursor.
     // Create a cursor to get Id, Name,and cgcloud__Category__c from the Product2 object
-    
     Database.Cursor locator;
+    if (locatorParam != null) {
+      locator = (Database.Cursor) JSON.deserialize(locatorParam, Database.Cursor.class);
+    } else {
+      locator = Database.getCursor('SELECT Id, Name, cgcloud__Category__c  FROM Product2 WHERE cgcloud__Category__c = :type  ORDER BY Name');
+    }
+    
 
     integer position = (pageNumber - 1) * pageSize;
 
     // TODO FOR THE CHALLENGE: 
     // Define the number of records to be fetched - it is the lesser value either the page size, or the remaining records
-    // integer countToFetch = 
+    integer countToFetch = Math.min(pageSize, locator.getNumRecords() - position);
 
     PagedResult result = new PagedResult();
     result.pageSize = pageSize;
     result.pageNumber = pageNumber;
 
     // TODO FOR THE CHALLENGE: Fetch the total number of records, and assign the value
-    // result.totalItemCount = 
-    
+    result.totalItemCount = locator.getNumRecords();
     // TODO FOR THE CHALLENGE: Fetch the records and store it in result.records
-    // result.records = 
+     result.records = locator.fetch(position, countToFetch);
 
     // TODO FOR THE CHALLENGE: send the locator to LWC
-    // result.locator = 
+    result.locator = JSON.serialize(locator);
 
     return result;
   }

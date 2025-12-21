@@ -84,4 +84,3 @@ export default class ComplianceCheckerCard extends LightningElement {
         this.dispatchEvent(evt);
     }
 }
-

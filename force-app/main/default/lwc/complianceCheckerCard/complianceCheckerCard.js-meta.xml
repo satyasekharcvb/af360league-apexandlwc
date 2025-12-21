@@ -4,4 +4,7 @@
     <isExposed>true</isExposed>
     <masterLabel>Compliance Checker Card LWC</masterLabel>
     <!-- TODO FOR THE CHALLENGE: Define the target to expose this component to Agentforce Custom Lightning Types  -->
+     <targets>
+      <target>lightning__AgentforceOutput</target>
+    </targets>
 </LightningComponentBundle>
