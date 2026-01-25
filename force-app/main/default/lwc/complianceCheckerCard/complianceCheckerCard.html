@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : DEBAJYOTI GHOSH
+  @group             : 
+  @last modified on  : 12-20-2025
+  @last modified by  : DEBAJYOTI GHOSH
+-->
 <template>
     <lightning-card title="Price Compliance Check" icon-name="standard:pricebook">
         <div class="slds-card__body slds-card__body_inner">
@@ -5,10 +12,10 @@
             <div class={bannerClass} role="alert">
                 <div class="slds-media">
                     <div class="slds-media__figure">
-                        <lightning-icon icon-name={statusIcon} size="small" alternative-text={value.statusMessage}></lightning-icon>
+                        <lightning-icon icon-name={statusIcon} size="small" alternative-text={complianceData.statusMessage}></lightning-icon>
                     </div>
                     <div class="slds-media__body">
-                        <h2 class="slds-text-heading_small">{value.statusMessage}</h2>
+                        <h2 class="slds-text-heading_small">{complianceData.statusMessage}</h2>
                         <p class="slds-text-body_small" if:true={showDetails}>
                             Price Gap: <strong>{formattedPriceGap}</strong>
                         </p>
@@ -16,20 +23,19 @@
                 </div>
             </div>
 
-            <!-- Compliance Details - Simple Data Display -->
+            <!-- Compliance Details -->
             <div if:true={showDetails}>
-                <p><strong>Observed Price:</strong> ${formattedObservedPrice}</p>
-                <p><strong>Target Price:</strong> ${formattedTargetPrice}</p>
+                <p><strong>Observed Price:</strong> {formattedObservedPrice}</p>
+                <p><strong>Target Price:</strong> {formattedTargetPrice}</p>
                 <p><strong>Price Gap:</strong> {formattedPriceGap}</p>
-                <p if:true={showPenalty}><strong>Penalty:</strong> ${formattedPenalty}</p>
-                <p if:true={showStoreType}><strong>Store Type:</strong> {value.storeType}</p>
+                <p if:true={showPenalty}><strong>Penalty:</strong> {formattedPenalty}</p>
+                <p if:true={showStoreType}><strong>Store Type:</strong> {complianceData.storeType}</p>
             </div>
 
             <!-- Error Message -->
             <div if:true={hasError}>
-                <p><strong>Error:</strong> {value.errorMessage}</p>
+                <p><strong>Error:</strong> {complianceData.errorMessage}</p>
             </div>
         </div>
     </lightning-card>
 </template>
-

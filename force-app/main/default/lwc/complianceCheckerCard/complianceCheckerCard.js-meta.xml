@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>64.0</apiVersion>
+    <apiVersion>58.0</apiVersion>
     <isExposed>true</isExposed>
-    <masterLabel>Compliance Checker Card LWC</masterLabel>
-    <!-- TODO FOR THE CHALLENGE: Define the target to expose this component to Agentforce Custom Lightning Types  -->
+    <masterLabel>Compliance Checker Card</masterLabel>
+    <description>Displays price compliance results from Agentforce</description>
+    
+    <targets>
+        <target>lightning__AgentforceOutput</target>
+    </targets>
+    
+    <targetConfigs>
+        <targetConfig targets="lightning__AgentforceOutput">
+            <!-- For Agentforce, sometimes the type needs to be specified differently -->
+            <property name="value" type="@apex://c.ComplianceActionChecker.ComplianceMetrics" label="Compliance Metrics" description="Compliance metrics from Apex"/>
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

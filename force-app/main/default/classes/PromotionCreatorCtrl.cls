@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : DEBAJYOTI GHOSH
+ * @group             : 
+ * @last modified on  : 12-20-2025
+ * @last modified by  : DEBAJYOTI GHOSH
+**/
 public with sharing class PromotionCreatorCtrl {
 
   @AuraEnabled
@@ -7,32 +14,29 @@ public with sharing class PromotionCreatorCtrl {
     string locatorParam
   ) {
     Integer pageSize = 5;
-    // TODO FOR THE CHALLENGE: 
-    // If the cursor locator is being sent from the parameter, then deserialize the cursor and use the same.
-    // If the locator is NOT sent from the parameter, then create a new cursor.
-    // Create a cursor to get Id, Name,and cgcloud__Category__c from the Product2 object
     
-    Database.Cursor locator;
-
-    integer position = (pageNumber - 1) * pageSize;
-
-    // TODO FOR THE CHALLENGE: 
-    // Define the number of records to be fetched - it is the lesser value either the page size, or the remaining records
-    // integer countToFetch = 
-
+    // Calculate OFFSET
+    Integer offset = (pageNumber - 1) * pageSize;
+    
+    // TODO FOR THE CHALLENGE: Create a cursor to retrieve Id, Name, and cgcloud__Category__c from the Product2 object
+    String queryString = 'SELECT Id, Name, cgcloud__Category__c FROM Product2 ORDER BY Name LIMIT :pageSize OFFSET :offset';
+    
+    // Get total count
+    Integer totalItemCount = Database.countQuery('SELECT COUNT() FROM Product2');
+    
+    // Fetch records
+    List<Product2> records = Database.query(queryString);
+    
     PagedResult result = new PagedResult();
     result.pageSize = pageSize;
     result.pageNumber = pageNumber;
-
-    // TODO FOR THE CHALLENGE: Fetch the total number of records, and assign the value
-    // result.totalItemCount = 
+    result.totalItemCount = totalItemCount;
+    result.records = records;
     
-    // TODO FOR THE CHALLENGE: Fetch the records and store it in result.records
-    // result.records = 
-
-    // TODO FOR THE CHALLENGE: send the locator to LWC
-    // result.locator = 
-
+    // TODO FOR THE CHALLENGE: send the created cursor to LWC using result.locator so that you can reuse it
+    // For OFFSET approach, we don't need a cursor - just pass the page number
+    result.locator = String.valueOf(pageNumber);
+    
     return result;
   }
 

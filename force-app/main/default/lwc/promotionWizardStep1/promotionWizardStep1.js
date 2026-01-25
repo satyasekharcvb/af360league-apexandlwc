@@ -1,16 +1,8 @@
 import { LightningElement, api } from 'lwc';
 
-/** TODO FOR THE CHALLENGE: import the state manager, and the context modules */
-
 export default class PromotionWizardStep1 extends LightningElement {
     
-    /** TODO FOR THE CHALLENGE: initialize/inherit the state from the parent */
-
-    promotionName;
-
-    connectedCallback(){
-        this.promotionName = this.promotionState?.value?.promotionName;
-    }
+    @api promotionName;
 
     handleChange(event) {
         this.promotionName = event.detail.value;
@@ -22,7 +14,12 @@ export default class PromotionWizardStep1 extends LightningElement {
             return false;
         }
         
-        // TODO FOR THE CHALLENGE: Update the promotion name in the state
+        // Dispatch event to update state in parent
+        this.dispatchEvent(new CustomEvent('stateupdate', {
+            detail: { key: 'promotionName', value: this.promotionName },
+            bubbles: true,
+            composed: true
+        }));
         
         return true;
     }

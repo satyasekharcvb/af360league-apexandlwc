@@ -1,79 +1,53 @@
-//TODO FOR THE CHALLENGE: Import the module for the State Management
+import { LightningElement, track } from 'lwc';
 
-const promotionStateManager = defineState(
-  ({ /** TODO FOR THE CHALLENGE: add the required properties here */ }) => {
-
-    // TODO FOR THE CHALLENGE: Create a state property of type string to store promotion name
-    const promotionName;
+export default class PromotionStateManager extends LightningElement {
+    @track promotionName = '';
+    @track chosenProducts = [];
+    @track chosenStores = [];
     
-
-    // TODO FOR THE CHALLENGE: Create a state property of type array to store products
-    const chosenProducts;
-
-    const chosenStores = atom([]);
-
     // Add or update a product with discount
-    const setProduct = (product) => {
-        let chosenProductsTemp = [...chosenProducts.value];
+    setProduct(product) {
+        let chosenProductsTemp = [...this.chosenProducts];
         const existingIndex = chosenProductsTemp.findIndex(p => p.productId === product.productId);
         if (existingIndex >= 0) {
             chosenProductsTemp[existingIndex] = { ...chosenProductsTemp[existingIndex], ...product };
         } else {
             chosenProductsTemp.push(product);
         }
-        
-        // TODO FOR THE CHALLENGE: set the value of chosenProducts with the chosenProductsTemp
-        
+        this.chosenProducts = chosenProductsTemp;
     };
 
     // Remove a product by ID
-    const removeProduct = (productId) => {
-        let chosenProductsTemp = chosenProducts.value.filter(p => p.productId !== productId);
-        setAtom(chosenProducts, chosenProductsTemp);
+    removeProduct(productId) {
+        let chosenProductsTemp = this.chosenProducts.filter(p => p.productId !== productId);
+        this.chosenProducts = chosenProductsTemp;
     };
 
     // Bulk update products (replaces entire selection)
-    const updateProducts = (products) => {
-        setAtom(chosenProducts, [...products]);
+    updateProducts(products) {
+        this.chosenProducts = [...products];
     };
 
     // Check if a product is selected
-    const isProductSelected = (productId) => {
-        return chosenProducts.value.some(p => p.productId === productId);
+    isProductSelected(productId) {
+        return this.chosenProducts.some(p => p.productId === productId);
     };
 
     // Get discount for a product
-    const getProductDiscount = (productId) => {
-        const product = chosenProducts.value.find(p => p.productId === productId);
+    getProductDiscount(productId) {
+        const product = this.chosenProducts.find(p => p.productId === productId);
         return product ? product.discountPercent : 0;
     };
 
-    // TODO FOR THE CHALLENGE: Implement the computation logic for the productCount
-    // const productCount;
+    get productCount() {
+        return this.chosenProducts.length;
+    }
 
-    const updateStores = (stores) => {
-        setAtom(chosenStores, [...stores]);
+    updateStores(stores) {
+        this.chosenStores = [...stores];
     };
 
-    const updatePromotionName = (name) => {
-        // TODO FOR THE CHALLENGE: Implement a state change function for updating the product name
+    updatePromotionName(name) {
+        this.promotionName = name;
     };
-
-    // Return an object that defines the public API of promotionStateManager
-    return {
-      promotionName,
-      chosenProducts,
-      setProduct,
-      removeProduct,
-      updateProducts,
-      isProductSelected,
-      getProductDiscount,
-      productCount,
-      chosenStores,
-      updateStores,
-      updatePromotionName
-    };
-  },
-);
-
-export default promotionStateManager;
+}
