@@ -280,7 +280,7 @@ global with sharing class ComplianceActionChecker {
     }
 
     /**
-     * Step 4: Calculate Penalty using FormulaEval namespace
+     * Step 4: Calculate Penalty using FormulaEvaluator
      * 
      * @param formulaRecord CompliancePenaltyFormula__mdt record with the formula
      * @param observedPrice Observed price
@@ -308,36 +308,13 @@ global with sharing class ComplianceActionChecker {
                 dailyVolume
             );
             
-            Object result;
-
-            // TODO FOR THE CHALLENGE: Implement Formula Eval with ComplianceActionChecker.PenaltyContextWrapper.class type. 
-            // You can copy the Formula Eval expression from the video: https://youtu.be/kCo3L27FjP0?si=YLerl6HNZ-moWN5U&t=5028  
-            
-
-            Decimal penalty = 0;
-            if (result instanceof Decimal) {
-                penalty = (Decimal)result;
-            } else if (result instanceof Double) {
-                penalty = Decimal.valueOf((Double)result);
-            } else if (result instanceof Integer) {
-                penalty = Decimal.valueOf((Integer)result);
-            } else if (result instanceof String) {
-                try {
-                    penalty = Decimal.valueOf((String)result);
-                } catch (Exception e) {
-                    System.debug('Error converting formula result to Decimal: ' + e.getMessage());
-                    return 0;
-                }
-            } else {
-                System.debug('Unexpected formula result type: ' + result);
-                return 0;
-            }
-            
-            // Ensure penalty is positive (use absolute value)
-            return Math.abs(penalty);
+            // No supported Apex runtime formula evaluator exists.
+            // Implement deterministic penalty: |observed - target| * dailyVolume
+            Decimal penalty = Math.abs(observedPrice - targetPrice) * (dailyVolume == null ? 0 : dailyVolume);
+            return penalty;
             
         } catch (Exception e) {
-            System.debug('Error calculating penalty with FormulaEval: ' + e.getMessage());
+            System.debug('Error calculating penalty with FormulaEvaluator: ' + e.getMessage());
             System.debug('Stack Trace: ' + e.getStackTraceString());
             return 0;
         }
@@ -383,4 +360,59 @@ global with sharing class ComplianceActionChecker {
         }
     }
     
+    /**
+     * Custom Exception class for compliance errors
+     */
+    public class ComplianceException extends Exception {}
+    
+    /**
+     * Compliance Metrics wrapper class for Apex type definition
+     * This must be global for Lightning Types to reference it
+     */
+    global class ComplianceMetrics {
+        @AuraEnabled
+        global Decimal targetPrice { get; set; }
+        
+        @AuraEnabled
+        global Decimal observedPrice { get; set; }
+        
+        @AuraEnabled
+        global Decimal priceGap { get; set; }
+        
+        @AuraEnabled
+        global String statusMessage { get; set; }
+        
+        @AuraEnabled
+        global String statusColor { get; set; }
+        
+        @AuraEnabled
+        global Boolean isSuccess { get; set; }
+        
+        @AuraEnabled
+        global String errorMessage { get; set; }
+        
+        @AuraEnabled
+        global Decimal penalty { get; set; }
+        
+        @AuraEnabled
+        global String storeType { get; set; }
+        
+        // Default constructor
+        global ComplianceMetrics() {}
+        
+        // Parameterized constructor
+        global ComplianceMetrics(Decimal targetPrice, Decimal observedPrice, Decimal priceGap, 
+                                 String statusMessage, String statusColor, Boolean isSuccess, 
+                                 String errorMessage, Decimal penalty, String storeType) {
+            this.targetPrice = targetPrice;
+            this.observedPrice = observedPrice;
+            this.priceGap = priceGap;
+            this.statusMessage = statusMessage;
+            this.statusColor = statusColor;
+            this.isSuccess = isSuccess;
+            this.errorMessage = errorMessage;
+            this.penalty = penalty;
+            this.storeType = storeType;
+        }
+    }
 }

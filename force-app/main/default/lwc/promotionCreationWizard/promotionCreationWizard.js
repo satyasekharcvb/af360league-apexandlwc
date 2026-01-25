@@ -1,8 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 
-/** TODO FOR THE CHALLENGE: import the state manager */
-
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import savePromotion from '@salesforce/apex/PromotionCreatorCtrl.savePromotion';
@@ -11,10 +9,20 @@ export default class PromotionCreationWizard extends NavigationMixin(LightningEl
     @api recordId; // Account Id from record page context
 
     currentStep = 1;
-
-    /** TODO FOR THE CHALLENGE: initialize the state manager */
+    
+    @track state = {
+        promotionName: '',
+        chosenProducts: [],
+        chosenStores: []
+    };
 
     @track isSaving = false;
+
+    // Handle state updates from child components
+    handleStateUpdate(event) {
+        const { key, value } = event.detail;
+        this.state = { ...this.state, [key]: value };
+    }
 
     handleNext() {
         if (this.currentStep === 1) {
@@ -51,18 +59,18 @@ export default class PromotionCreationWizard extends NavigationMixin(LightningEl
         
         // Build the payload for Apex
         const payload = {
-            promotionName: promotionData.promotionName,
+            promotionName: this.state.promotionName,
             accountId: this.recordId,
-            templateId: null, // Can be extended to include template from Step 1
-            startDate: null,  // Can be extended to include dates from Step 1
+            templateId: null,
+            startDate: null,
             endDate: null,
-            products: promotionData.products.map(p => ({
+            products: this.state.chosenProducts.map(p => ({
                 productId: p.productId,
                 productName: p.productName,
                 category: p.category || null,
                 discountPercent: p.discountPercent
             })),
-            stores: promotionData.stores.map(s => ({
+            stores: this.state.chosenStores.map(s => ({
                 storeId: s.storeId,
                 storeName: s.storeName,
                 locationGroup: s.locationGroup || null
@@ -102,7 +110,6 @@ export default class PromotionCreationWizard extends NavigationMixin(LightningEl
 
     closeAction() {
         this.dispatchEvent(new CloseActionScreenEvent());
-        // Also dispatch custom close event for other contexts
         this.dispatchEvent(new CustomEvent('close'));
     }
 

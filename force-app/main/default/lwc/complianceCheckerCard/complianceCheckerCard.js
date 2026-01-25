@@ -1,20 +1,38 @@
-import { LightningElement, api, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { LightningElement, api } from 'lwc';
 
 export default class ComplianceCheckerCard extends LightningElement {
-    // Public properties - can be set from parent component or flow
     @api value;
-
+    
+    // Getter to safely access properties
+    get complianceData() {
+        // Check if value is an object with expected properties
+        if (this.value && typeof this.value === 'object') {
+            return this.value;
+        }
+        
+        // Return default structure if value is not as expected
+        return {
+            targetPrice: 0,
+            observedPrice: 0,
+            priceGap: 0,
+            statusMessage: 'No Data',
+            statusColor: 'GRAY',
+            isSuccess: false,
+            errorMessage: null,
+            penalty: null,
+            storeType: null
+        };
+    }
 
     // Computed properties for styling
     get bannerClass() {
         const baseClass = 'slds-notify slds-notify_alert slds-m-bottom_small';
         
-        if (this.value.statusColor === 'RED') {
+        if (this.complianceData.statusColor === 'RED') {
             return `${baseClass} slds-theme_error`;
-        } else if (this.value.statusColor === 'YELLOW') {
+        } else if (this.complianceData.statusColor === 'YELLOW') {
             return `${baseClass} slds-theme_warning`;
-        } else if (this.value.statusColor === 'GREEN') {
+        } else if (this.complianceData.statusColor === 'GREEN') {
             return `${baseClass} slds-theme_success`;
         } else {
             return `${baseClass} slds-theme_offline`;
@@ -22,11 +40,11 @@ export default class ComplianceCheckerCard extends LightningElement {
     }
 
     get statusIcon() {
-        if (this.value.statusColor === 'RED') {
+        if (this.complianceData.statusColor === 'RED') {
             return 'utility:error';
-        } else if (this.value.statusColor === 'YELLOW') {
+        } else if (this.complianceData.statusColor === 'YELLOW') {
             return 'utility:warning';
-        } else if (this.value.statusColor === 'GREEN') {
+        } else if (this.complianceData.statusColor === 'GREEN') {
             return 'utility:success';
         } else {
             return 'utility:info';
@@ -34,54 +52,43 @@ export default class ComplianceCheckerCard extends LightningElement {
     }
 
     get showDetails() {
-        return this.value.isSuccess && this.value.targetPrice != null && this.value.priceGap != null;
+        return this.complianceData.isSuccess && 
+               this.complianceData.targetPrice != null && 
+               this.complianceData.priceGap != null;
     }
 
-    
-
     get hasError() {
-        return !this.value.isSuccess && this.value.errorMessage;
+        return !this.complianceData.isSuccess && this.complianceData.errorMessage;
     }
 
     get formattedObservedPrice() {
-        return this.value?.observedPrice != null ? this.value.observedPrice.toFixed(2) : '0.00';
+        return this.complianceData.observedPrice != null ? 
+               `$${this.complianceData.observedPrice.toFixed(2)}` : '$0.00';
     }
 
     get formattedTargetPrice() {
-        return this.value.targetPrice != null ? this.value.targetPrice.toFixed(2) : '0.00';
+        return this.complianceData.targetPrice != null ? 
+               `$${this.complianceData.targetPrice.toFixed(2)}` : '$0.00';
     }
 
     get formattedPriceGap() {
-        if (this.value.priceGap == null) return '$0.00';
-        const gap = this.value.priceGap;
+        if (this.complianceData.priceGap == null) return '$0.00';
+        const gap = this.complianceData.priceGap;
         const sign = gap >= 0 ? '+' : '';
         return `${sign}$${gap.toFixed(2)}`;
     }
 
-
     get showPenalty() {
-        return this.value.penalty != null && this.value.penalty > 0;
+        return this.complianceData.penalty != null && this.complianceData.penalty > 0;
     }
 
     get showStoreType() {
-        return this.value.storeType != null && this.value.storeType.trim().length > 0;
+        return this.complianceData.storeType != null && 
+               this.complianceData.storeType.trim().length > 0;
     }
 
     get formattedPenalty() {
-        return this.value.penalty != null ? this.value.penalty.toFixed(2) : '0.00';
-    }
-
-    /**
-     * Shows a toast notification
-     */
-    showToast(title, message, variant) {
-        const evt = new ShowToastEvent({
-            title: title,
-            message: message,
-            variant: variant,
-            mode: 'dismissable'
-        });
-        this.dispatchEvent(evt);
+        return this.complianceData.penalty != null ? 
+               `$${this.complianceData.penalty.toFixed(2)}` : '$0.00';
     }
 }
-

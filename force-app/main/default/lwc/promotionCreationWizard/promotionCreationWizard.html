@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : DEBAJYOTI GHOSH
+  @group             : 
+  @last modified on  : 12-20-2025
+  @last modified by  : DEBAJYOTI GHOSH
+-->
 <template>
     <lightning-card title={stepTitle}>
         <!-- Progress Indicator -->
@@ -11,13 +18,25 @@
 
         <div class="slds-p-around_medium">
             <template lwc:if={isStep1}>
-                <c-promotion-wizard-step1></c-promotion-wizard-step1>
+                <c-promotion-wizard-step1 
+                    promotion-name={state.promotionName}
+                    onstateupdate={handleStateUpdate}>
+                </c-promotion-wizard-step1>
             </template>
             <template lwc:elseif={isStep2}>
-                <c-promotion-wizard-step2></c-promotion-wizard-step2>
+                <c-promotion-wizard-step2 
+                    chosen-products={state.chosenProducts}
+                    onstateupdate={handleStateUpdate}>
+                </c-promotion-wizard-step2>
             </template>
             <template lwc:elseif={isStep3}>
-                <c-promotion-wizard-step3 record-id={recordId}></c-promotion-wizard-step3>
+                <c-promotion-wizard-step3 
+                    record-id={recordId}
+                    chosen-stores={state.chosenStores}
+                    promotion-name={state.promotionName}
+                    chosen-products={state.chosenProducts}
+                    onstateupdate={handleStateUpdate}>
+                </c-promotion-wizard-step3>
             </template>
         </div>
 

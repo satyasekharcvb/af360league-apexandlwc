@@ -1,12 +1,10 @@
-import { LightningElement, api, track } from 'lwc';
-
-/** TODO FOR THE CHALLENGE: import the state manager, and the context modules */
+import { LightningElement, api, track, wire } from 'lwc';
 
 import getProducts from '@salesforce/apex/PromotionCreatorCtrl.getProducts';
 
 export default class PromotionWizardStep2 extends LightningElement {
 
-    /** TODO FOR THE CHALLENGE: initialize/inherit the state from the parent */
+    @api chosenProducts = []; // Passed from parent
 
     @track products = [];
     @track selectedProductsMap = new Map();
@@ -19,14 +17,13 @@ export default class PromotionWizardStep2 extends LightningElement {
     error = null;
 
     connectedCallback() {
-        // Restore previously selected products from state
-        this.restoreSelectionsFromState();
+        // Restore previously selected products from parent
+        this.restoreSelectionsFromParent();
         this.loadProducts();
     }
 
-    restoreSelectionsFromState() {
-        const stateProducts = this.promotionState?.value?.chosenProducts || [];
-        stateProducts.forEach(product => {
+    restoreSelectionsFromParent() {
+        this.chosenProducts.forEach(product => {
             this.selectedProductsMap.set(product.productId, {
                 productId: product.productId,
                 productName: product.productName,
@@ -60,7 +57,7 @@ export default class PromotionWizardStep2 extends LightningElement {
                     name: record.Name,
                     category: record.cgcloud__Category__c || 'N/A',
                     isSelected: isSelected,
-                    isDisabled: !isSelected, // For disabled attribute in template
+                    isDisabled: !isSelected,
                     discountPercent: savedProduct ? savedProduct.discountPercent : 0
                 };
             });
@@ -78,7 +75,6 @@ export default class PromotionWizardStep2 extends LightningElement {
         const product = this.products.find(p => p.id === productId);
 
         if (isChecked) {
-            // Add to selection map
             this.selectedProductsMap.set(productId, {
                 productId: productId,
                 productName: product.name,
@@ -86,11 +82,9 @@ export default class PromotionWizardStep2 extends LightningElement {
                 discountPercent: product.discountPercent || 0
             });
         } else {
-            // Remove from selection map
             this.selectedProductsMap.delete(productId);
         }
 
-        // Update the products array to reflect selection change
         this.products = this.products.map(p => {
             if (p.id === productId) {
                 return { ...p, isSelected: isChecked, isDisabled: !isChecked };
@@ -102,11 +96,8 @@ export default class PromotionWizardStep2 extends LightningElement {
     handleDiscountChange(event) {
         const productId = event.target.dataset.id;
         let discountValue = parseFloat(event.target.value) || 0;
-        
-        // Clamp between 0 and 100
         discountValue = Math.max(0, Math.min(100, discountValue));
 
-        // Update in products array
         this.products = this.products.map(p => {
             if (p.id === productId) {
                 return { ...p, discountPercent: discountValue };
@@ -114,7 +105,6 @@ export default class PromotionWizardStep2 extends LightningElement {
             return p;
         });
 
-        // Update in selection map if selected
         if (this.selectedProductsMap.has(productId)) {
             const existing = this.selectedProductsMap.get(productId);
             this.selectedProductsMap.set(productId, {
@@ -141,7 +131,7 @@ export default class PromotionWizardStep2 extends LightningElement {
     handleFirstPage() {
         if (this.pageNumber !== 1) {
             this.pageNumber = 1;
-            this.locator = null; // Reset locator for first page
+            this.locator = null;
             this.loadProducts();
         }
     }
@@ -205,13 +195,11 @@ export default class PromotionWizardStep2 extends LightningElement {
 
     @api
     allValid() {
-        // Check if at least one product is selected
         if (this.selectedProductsMap.size === 0) {
             this.error = 'Please select at least one product.';
             return false;
         }
 
-        // Check if all selected products have a discount value
         let allHaveDiscount = true;
         this.selectedProductsMap.forEach((product) => {
             if (!product.discountPercent || product.discountPercent <= 0) {
@@ -224,9 +212,13 @@ export default class PromotionWizardStep2 extends LightningElement {
             return false;
         }
 
-        // Save selections to state
+        // Dispatch event to update state in parent
         const productsArray = Array.from(this.selectedProductsMap.values());
-        this.promotionState.value.updateProducts(productsArray);
+        this.dispatchEvent(new CustomEvent('stateupdate', {
+            detail: { key: 'chosenProducts', value: productsArray },
+            bubbles: true,
+            composed: true
+        }));
         
         this.error = null;
         return true;
