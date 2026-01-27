@@ -5,7 +5,7 @@ Watch this video to understand the concepts that you will work with in this hand
 Complete image for challenge 1 demo is below:  ![alt text](image.png)   = press control then click
 
 
-Hands-On Challenge
+Hands-On Challenge demo
 Introduction
 A team of Salesforce developers and administrators has configured Salesforce Consumer Goods Cloud and implemented initial customizations for a consumer goods company. You are tasked with enhancing the existing solution using modern Lightning Web Components (LWC) and the latest Apex features.
 
