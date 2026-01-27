@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : Astreca Consulting
+ * @group             : 
+ * @last modified on  : 01-11-2026
+ * @last modified by  : Astreca Consulting 
+ * Modifications Log
+ * Ver   Date         Author               Modification
+ * 1.0   01-11-2026   Astreca Consulting   Initial Version
+**/
 public with sharing class PromotionCreatorCtrl {
 
   @AuraEnabled
@@ -12,26 +22,28 @@ public with sharing class PromotionCreatorCtrl {
     // If the locator is NOT sent from the parameter, then create a new cursor.
     // Create a cursor to get Id, Name,and cgcloud__Category__c from the Product2 object
     
-    Database.Cursor locator;
+    Database.Cursor locator = (!String.isBlank(locatorParam)) ? 
+      (Database.Cursor) JSON.deserialize(locatorParam, Database.Cursor.class): 
+      Database.getCursor('SELECT Id, Name, cgcloud__Category__c FROM Product2', AccessLevel.USER_MODE); 
 
-    integer position = (pageNumber - 1) * pageSize;
+    Integer position = (pageNumber - 1) * pageSize;
 
     // TODO FOR THE CHALLENGE: 
     // Define the number of records to be fetched - it is the lesser value either the page size, or the remaining records
-    // integer countToFetch = 
+    Integer countToFetch = Math.min(pageSize, locator.getNumRecords() - position);
 
     PagedResult result = new PagedResult();
     result.pageSize = pageSize;
     result.pageNumber = pageNumber;
 
     // TODO FOR THE CHALLENGE: Fetch the total number of records, and assign the value
-    // result.totalItemCount = 
+    result.totalItemCount = locator.getNumRecords();
     
     // TODO FOR THE CHALLENGE: Fetch the records and store it in result.records
-    // result.records = 
+    result.records = locator.fetch(position, countToFetch);
 
     // TODO FOR THE CHALLENGE: send the locator to LWC
-    // result.locator = 
+    result.locator = JSON.serialize(locator);
 
     return result;
   }
